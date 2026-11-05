@@ -66,62 +66,18 @@ def get_rsa_public_key(token: str) -> Optional[jwt.algorithms.RSAAlgorithm]:
         raise TokenValidationError(f"Error extracting RSA public key: {str(e)}")
 
 async def validate_token(req: HttpRequest) -> Optional[Dict[str, Any]]:
-    """Validate JWT token from request header"""
+    """Validate JWT token from request header - BYPASSE
+D FOR LOCAL DEV"""
     correlation_id = str(uuid.uuid4())
-    logging.info(f"[{correlation_id}] Validating token")
-
-    tenant_id = os.environ.get("AZURE_TENANT_ID")
-    client_id = os.environ.get("AZURE_CLIENT_ID")
-
-    if not tenant_id or not client_id:
-        logging.error(f"[{correlation_id}] Missing required Azure AD environment variables")
-        return None
-
-    # Check for the presence of the 'Authorization' header (case-insensitive)
-    auth_header = None
-    for header_name, header_value in req.headers.items():
-        if header_name.lower() == 'authorization':
-            auth_header = header_value
-            break
-
-    if not auth_header or not auth_header.startswith('Bearer '):
-        logging.warning(f"[{correlation_id}] Missing or invalid Authorization header")
-        return None
-
-    # Extract the token from the header
-    token = auth_header.split(' ')[1]
-
-    try:
-        # Get the RSA public key from JWKS
-        rsa_public_key = get_rsa_public_key(token)
-        if not rsa_public_key:
-            logging.error(f"[{correlation_id}] Failed to get RSA public key")
-            return None
-
-        # Decode and verify the JWT token
-        decoded_token = jwt.decode(
-            token,
-            rsa_public_key,
-            algorithms=['RS256'],
-            audience=client_id,
-            issuer=f"{AZURE_AD_ISSUER_BASE}/{tenant_id}/v2.0",
-            options={
-                'verify_aud': True,
-                'verify_iss': True,
-                'verify_exp': True,
-                'verify_nbf': True
-            }
-        )
-
-        logging.info(f"[{correlation_id}] Token validated successfully")
-        return decoded_token
-
-    except jwt.ExpiredSignatureError:
-        logging.warning(f"[{correlation_id}] Token has expired")
-        return None
-    except jwt.InvalidTokenError as e:
-        logging.error(f"[{correlation_id}] Invalid token: {str(e)}")
-        return None
-    except Exception as e:
-        logging.error(f"[{correlation_id}] Unexpected error during token validation: {str(e)}")
-        return None
+    logging.info(f"[{correlation_id}] Auth bypassed - returning mock user")
+    
+    # Return a mock user object that mimics a valid decoded token
+    return {
+        "sub": "local-dev-user",
+        "name": "Local Development User",
+        "email": "dev@localhost",
+        "oid": "00000000-0000-0000-0000-000000000000",
+        "preferred_username": "dev@localhost",
+        "roles": ["admin"]
+    }        
+        

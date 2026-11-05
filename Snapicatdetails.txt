@@ -1,0 +1,12 @@
+VITE_APP_TITLE=My OCLC App
+VITE_APP_NAME=My Library
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_BATCH_SIZE=1000
+
+# Azure AD (MSAL) — same tenant as your backend
+VITE_AZURE_FE_APP_TENANT_ID=46b8a056-70c0-43f9-a3c0-54936baadf2d
+VITE_AZURE_FE_APP_CLIENT_ID=59ae6cf3-13a7-4795-886e-037e22e7cb36
+VITE_AZURE_BE_APP_CLIENT_ID=83901fbf-d370-4b12-8e84-8883ea005fee
+
+# Optional: API code if your azure functions backend expects it
+# VITE_API_CODE=
