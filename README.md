@@ -1,6 +1,6 @@
 # Snapicat
 
-**Snapicat** is a monorepo for a **Worldcat OCLC** workflow app: upload Excel data, search variables against the OCLC API, and generate MARC/MARCXML for cataloging. It consists of a **Vite + React** frontend and an **Azure Functions** (Python) backend that talk to the [OCLC Worldcat Metadata API](https://developer.api.oclc.org/wc-metadata-v2#/). The backend can also be ran as a web server through utilizing Fastapi via `app.py` file.
+**Snapicat** is a monorepo for a **Worldcat OCLC** workflow app: upload Excel data, search variables against the OCLC API, and generate MARC/MARCXML for cataloging. It consists of a **Vite + React** frontend and a Python backend that talk to the [OCLC Worldcat Metadata API](https://developer.api.oclc.org/wc-metadata-v2#/). The backend with this fork runs as a web server through utilizing Fastapi via `app.py` file.
 
 ## What it does
 
@@ -9,14 +9,14 @@
 - **Process** — Successful rows can be marked and moved to a “Processed” view. Processed records are stored locally (IndexedDB).
 - **Generate XML** — From the Processed page, users can generate MARC or MARCXML for selected OCLC numbers and download a single file.
 
-Authentication is **Azure AD (Microsoft)** via MSAL; the backend validates JWT and uses **OCLC WSKey** credentials to call the Worldcat API.
+This fork bypasses authentication that the main uses through **Azure AD (Microsoft)** via MSAL; the backend validates JWT and uses **OCLC WSKey** credentials to call the Worldcat API.
 
 ## Tech stack
 
 | Layer   | Tech |
 |--------|------|
 | Client | React 19, Vite 7, TypeScript, TanStack Query, MSAL (Azure AD), Dexie (IndexedDB), Tailwind CSS, shadcn-style UI |
-| Server | Python 3.12, Azure Functions (or FastAPI standalone), OCLC API (OAuth + search/bibs) |
+| Server | Python 3.12, FastAPI standalone, OCLC API (OAuth + search/bibs) |
 
 ## Repository structure
 
@@ -46,7 +46,7 @@ Use **per-app** env files to avoid tooling and path issues (Vite and the standal
 
 - **Client:** `cd apps/client` then copy `apps/client/.env.example` to `apps/client/.env` and set the `VITE_*` variables (see [docs/client.md](docs/client.md)).
 - **Server:**  
-  - **Azure Functions:** copy `apps/server/local.settings.json.example` to `apps/server/local.settings.json` and set `OCLC_WSKEY`, `OCLC_SECRET`, `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, etc. (see [docs/server.md](docs/server.md)).  
+  - **WorldCat API Functions:** copy `apps/server/local.settings.json.example` to `apps/server/local.settings.json` and set `OCLC_WSKEY`, `OCLC_SECRET`, etc. (see [docs/server.md](docs/server.md)).  
   - **Standalone (app.py):** copy `apps/server/.env.example` to `apps/server/.env` and fill in the same variables.
 
 ### 2. Client
@@ -61,28 +61,21 @@ App runs at **http://localhost:5174** (or the port in `vite.config`). Point `VIT
 
 ### 3. Server (Azure Functions)
 
+Run the **standalone FastAPI** server (see [docs/server.md](docs/server.md)):
+
 ```bash
 cd apps/server
 python3.12 -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-func start --port 8080 --cors http://localhost:5174
-```
-
-Functions are at **http://localhost:8080/api/search_books** and **http://localhost:8080/api/generate_xml**.
-
-Alternatively, run the **standalone FastAPI** server (see [docs/server.md](docs/server.md)):
-
-```bash
-cd apps/server
 source venv/bin/activate
 pip install -r requirements.txt
 python app.py
 ```
 
+Functions are at **http://localhost:8080/api/search_books** and **http://localhost:8080/api/generate_xml**.
+
 ### 4. Use the app
 
-1. Open the client in the browser and sign in with Azure AD (an account with the required app roles).
+1. Open the client in the browser.
 2. Upload an Excel file on the home page.
 3. Run “Search” to query OCLC; results fill into the table.
 4. Process selected rows; they appear on the Processed page.
