@@ -15,7 +15,7 @@ This fork bypasses authentication that the main uses through **Azure AD (Microso
 
 | Layer   | Tech |
 |--------|------|
-| Client | React 19, Vite 7, TypeScript, TanStack Query, MSAL (Azure AD), Dexie (IndexedDB), Tailwind CSS, shadcn-style UI |
+| Client | React 19, Vite 7, TypeScript, TanStack Query, Dexie (IndexedDB), Tailwind CSS, shadcn-style UI |
 | Server | Python 3.12, FastAPI standalone, OCLC API (OAuth + search/bibs) |
 
 ## Repository structure
@@ -33,21 +33,24 @@ No NX or Turborepo; client and server are independent.
 
 - **Node.js** 20.x and **Yarn** (for the client)
 - **Python 3.12** (for the server; do not use 3.10, 3.11, or 3.13+ due to grpcio compatibility)
-- **OCLC WSKey + secret** and **Azure AD** app registration (tenant ID, client IDs for frontend and backend)
+- **OCLC WSKey + secret (no Azure AD app registration required)
 
 ### 1. Clone and env
 
 ```bash
-git clone <repo-url>
-cd snapicat
+git clone https://github.com/ericbradley/snapicat_without_Azure.git
+cd snapicat_without_Azure
 ```
 
 Use **per-app** env files to avoid tooling and path issues (Vite and the standalone server each load `.env` from their own directory; a single root `.env` can cause wrong paths or missing variables).
 
 - **Client:** `cd apps/client` then copy `apps/client/.env.example` to `apps/client/.env` and set the `VITE_*` variables (see [docs/client.md](docs/client.md)).
-- **Server:**  
-  - **WorldCat API Functions:** copy `apps/server/local.settings.json.example` to `apps/server/local.settings.json` and set `OCLC_WSKEY`, `OCLC_SECRET`, etc. (see [docs/server.md](docs/server.md)).  
-  - **Standalone (app.py):** copy `apps/server/.env.example` to `apps/server/.env` and fill in the same variables.
+- **Server:**  copy `apps/server/.env.example` to `apps/server/.env` and fill in:
+  - OCLC_WSKEY=your_key
+  - OCLC_SECRET=your_secret
+  - CORS_ORIGINS=http://localhost:5174
+  - HOST=0.0.0.0
+  - PORT=8080
 
 ### 2. Client
 
@@ -59,14 +62,14 @@ yarn dev
 
 App runs at **http://localhost:5174** (or the port in `vite.config`). Point `VITE_API_BASE_URL` at your backend (e.g. `http://localhost:8080/api`).
 
-### 3. Server (Azure Functions)
+### 3. Server (FastAPI Standalone)
 
 Run the **standalone FastAPI** server (see [docs/server.md](docs/server.md)):
 
 ```bash
 cd apps/server
 python3.12 -m venv venv
-source venv/bin/activate
+source venv/bin/activate # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
